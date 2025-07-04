@@ -15,7 +15,7 @@ export default function Login({ setToken }) {
     const response = await fetch("https://todobackendnode.onrender.com/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: json.stringify({ username, password }),
+      body: JSON.stringify({ username, password }),
     });
     const data = await response.json();
     setAuthLoading(false);

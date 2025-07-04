@@ -1,4 +1,4 @@
-import "./styles.css";
+// import "./styles.css";
 import { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -9,15 +9,15 @@ import {
 import Login from "./Login";
 import Signup from "./Signup";
 
-export default function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+function App() {
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [tasks, setTasks] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
 
-  const fetchTask = async (token) => {
+  const fetchTasks = async (token) => {
     const response = await fetch("https://todobackendnode.onrender.com/tasks", {
-      header: {
+      headers: {
         Authorization: `Bearer ${token}`,
       },
     });
@@ -28,7 +28,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (token) fetchTask(token);
+    if (token) fetchTasks(token);
   }, [token]);
 
   //logout
@@ -38,7 +38,7 @@ export default function App() {
     setTasks([]);
   };
 
-  const addTasks = async (text) => {
+  const addTask = async (text) => {
     const response = await fetch("https://todobackendnode.onrender.com/tasks", {
       method: "POST",
       headers: {
@@ -57,12 +57,12 @@ export default function App() {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
-    setTasks(tasks.filter((task) => task._id != id));
+    setTasks(tasks.filter((task) => task._id !== id));
   };
 
   //update status
   const updateTasksStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === "pending" ? "complete" : "pending";
+    const newStatus = currentStatus === "pending" ? "completed" : "pending";
     const response = await fetch(
       `https://todobackendnode.onrender.com/tasks/${id}/status`,
       {
@@ -80,7 +80,7 @@ export default function App() {
 
   //update priority
   const updateTasksPriority = async (id, newPriority) => {
-    const newStatus = currentStatus === "pending" ? "complete" : "pending";
+    // const newStatus = currentStatus === "pending" ? "complete" : "pending";
     const response = await fetch(
       `https://todobackendnode.onrender.com/tasks/${id}/priority`,
       {
@@ -93,11 +93,11 @@ export default function App() {
       }
     );
     const updatedTask = await response.json();
-    setTasks(task.map((task) => (task._id === id ? updatedTask : task)));
+    setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
   };
 
   //Filtering task
-  const filterTasks = tasks.filter(
+  const filteredTasks = tasks.filter(
     (task) =>
       (filterStatus === "all" || task.status === filterStatus) &&
       (filterPriority === "all" || task.priority === filterPriority)
@@ -109,7 +109,7 @@ export default function App() {
         <ul className="flex space-x-4">
           <li>
             <a
-              href="a"
+              href="#"
               className="px-4 py-2 rounded-full font-semibold transition-colors duration-200 hover:bg-orange-600 hover:text-white focus:bg-orange-700 focus:outline-none shadow-sm"
             >
               Home
@@ -142,16 +142,14 @@ export default function App() {
           />
           <button
             type="submit"
-            className="ml-4 px-4 py-2 rounded-full font-semibold transition-colors duration-200 hover:bg-orange-600 hover:text-white focus:bg-orange-700 focus:outline-none shadow-sm"
+            className="ml-4 px-6 py-2 rounded-full font-semibold transition-colors duration-200 hover:bg-orange-600 hover:text-white focus:bg-orange-700 focus:outline-none shadow-sm"
           >
             Add
           </button>
         </form>
         <div className="mb-6 flex gap-4 justify-center">
           <select
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-            }}
+            onChange={(e) => setFilterStatus(e.target.value)}
             className="p-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
             value={filterStatus}
           >
@@ -161,9 +159,7 @@ export default function App() {
           </select>
 
           <select
-            onChange={(e) => {
-              setFilterPriority(e.target.value);
-            }}
+            onChange={(e) => setFilterPriority(e.target.value)}
             className="p-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
             value={filterPriority}
           >
@@ -175,15 +171,15 @@ export default function App() {
         </div>
         {/* Tasks after filtering */}
         <ul className="space-y-4">
-          {filteredTasks.map((task) => {
+          {filteredTasks.map((task) => (
             <li
               key={task._id}
               className="p-4 bg-white rounded-xl shadow flex flex-col md:flex-row md:item-center gap-4 hover:bg-orange-100 transition duration-300"
             >
               <div className="flex-1">
                 <span className="text-lg text-orange-800">{task.text}</span>
-                <span className="">
-                  (){task.status},{task.priority}
+                <span className="ml-2 text-sm text-gray-500">
+                  ({task.status},{task.priority})
                 </span>
               </div>
               <div className="flex gap-2 item-center">
@@ -200,9 +196,9 @@ export default function App() {
 
                 <select
                   value={task.priority}
-                  onChange={(e) => {
-                    updateTasksPriority(task._id, e.target.value);
-                  }}
+                  onChange={(e) =>
+                    updateTasksPriority(task._id, e.target.value)
+                  }
                   className="p-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   // value={filterPriority}
                 >
@@ -219,8 +215,8 @@ export default function App() {
                   Delete
                 </button>
               </div>
-            </li>;
-          })}
+            </li>
+          ))}
         </ul>
       </main>
       <footer className="bg-orange-500 text-white p-4 mt-auto text-center shadow-inner">
@@ -232,7 +228,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/signup" element={<Signup />} />
         <Route
           path="/"
@@ -242,3 +238,5 @@ export default function App() {
     </Router>
   );
 }
+
+export default App;
